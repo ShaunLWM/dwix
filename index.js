@@ -14,6 +14,9 @@ const seen = [];
 const files = [];
 
 console.time("Execution");
+const print = (str) => {
+	if (argv["verbose"] || argv["V"] || argv["v"]) console.log(str);
+};
 
 async.whilst(
 	function test(cb) {
@@ -24,7 +27,7 @@ async.whilst(
 		async.map(
 			urls,
 			async (dqUrl) => {
-				console.log(`[+] Fetching ${dqUrl}`, `[${urlQueue.length}]`);
+				print(`[+] Fetching ${dqUrl}`, `[${urlQueue.length}]`);
 				const results = await fetch(dqUrl);
 				const data = await results.text();
 				seen.push(dqUrl);
@@ -39,7 +42,7 @@ async.whilst(
 						if (dirPath.endsWith("/")) {
 							const newUrl = url.resolve(dqUrl, dirPath);
 							if (!urlQueue.includes(newUrl) && !seen.includes(newUrl)) {
-								console.log(`[+] Adding ${newUrl}`);
+								print(`[+] Adding ${newUrl}`);
 								urlQueue.push(newUrl);
 							}
 						} else {
@@ -60,9 +63,9 @@ async.whilst(
 		);
 	},
 	function (err, n) {
-		console.log(`-----------------------------`);
-		console.timeEnd("Execution");
-		console.log(exts);
+		print(`-----------------------------`);
+		print("Execution");
+		print(exts);
 		if (argv["output"]) fs.writeFileSync(argv["output"], files.join("\n"));
 	}
 );
