@@ -1,29 +1,43 @@
-const argv = require("yargs").argv;
 const fetch = require("node-fetch");
 const cheerio = require("cheerio");
 const url = require("url");
 const async = require("async");
 const fs = require("fs");
+const argv = require("yargs")
+	.usage(`Usage: trix --verbose --output [dir] url`)
+	.alias("v", "verbose")
+	.alias("V", "verbose")
+	.describe("v", "Enable verbose logging")
+	.alias("p", "parallel")
+	.default("parallel", 10)
+	.describe("p", "Number of urls to scan at once")
+	.alias("o", "output")
+	.describe("o", "Output scanned urls to file")
+	.help("h")
+	.alias("h", "help")
+	.demandCommand(1).argv;
 
 const baseUrl = argv._[0];
-const urlQueue = [baseUrl];
-const exts = {};
-
 const blacklist = ["../", "./", "#!", "#!/"];
 const seen = [];
+
+const exts = {};
 const files = [];
 
-console.time("Execution");
+const urlQueue = [baseUrl];
+
 const print = (str) => {
-	if (argv["verbose"] || argv["V"] || argv["v"]) console.log(str);
+	if (argv["verbose"]) console.log(str);
 };
+
+if (argv["verbose"]) console.time("Execution");
 
 async.whilst(
 	function test(cb) {
 		return cb(null, urlQueue.length > 0);
 	},
 	function iter(callback) {
-		const urls = urlQueue.splice(0, 10);
+		const urls = urlQueue.splice(0, argv["parallel"]);
 		async.map(
 			urls,
 			async (dqUrl) => {
@@ -64,8 +78,8 @@ async.whilst(
 	},
 	function (err, n) {
 		print(`-----------------------------`);
-		print("Execution");
 		print(exts);
+		if (argv["verbose"]) console.timeEnd("Execution");
 		if (argv["output"]) fs.writeFileSync(argv["output"], files.join("\n"));
 	}
 );
