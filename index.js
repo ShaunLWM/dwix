@@ -3,13 +3,15 @@ const fetch = require("node-fetch");
 const cheerio = require("cheerio");
 const url = require("url");
 const async = require("async");
+const fs = require("fs");
 
 const baseUrl = argv._[0];
 const urlQueue = [baseUrl];
-const files = {};
+const exts = {};
 
 const blacklist = ["../", "./", "#!", "#!/"];
 const seen = [];
+const files = [];
 
 console.time("Execution");
 
@@ -44,9 +46,10 @@ async.whilst(
 							const ext = dirPath
 								.substr(dirPath.lastIndexOf(".") + 1)
 								.toLowerCase();
-							if (typeof files[ext] === "undefined")
-								files[ext] = { count: 1, size: 0 };
-							else files[ext].count += 1;
+							if (typeof exts[ext] === "undefined") {
+								files.push(dirPath);
+								exts[ext] = { count: 1, size: 0 };
+							} else exts[ext].count += 1;
 						}
 					}
 				});
@@ -59,6 +62,7 @@ async.whilst(
 	function (err, n) {
 		console.log(`-----------------------------`);
 		console.timeEnd("Execution");
-		console.log(files);
+		console.log(exts);
+		if (argv["output"]) fs.writeFileSync(argv["output"], files.join("\n"));
 	}
 );
