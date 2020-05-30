@@ -7,6 +7,10 @@ const async = require("async");
 const baseUrl = argv._[0];
 const urlQueue = [baseUrl];
 const files = {};
+
+const blacklist = ["../", "./", "#!", "#!/"];
+const seen = [];
+
 console.time("Execution");
 
 async.whilst(
@@ -21,19 +25,27 @@ async.whilst(
 				console.log(`[+] Fetching ${dqUrl}`, `[${urlQueue.length}]`);
 				const results = await fetch(dqUrl);
 				const data = await results.text();
+				seen.push(dqUrl);
 				const $ = cheerio.load(data);
 				$("a").each((i, element) => {
 					let dirPath = $(element).attr("href");
-					if ((!$(element).text().toLowerCase().includes("parent directory") && !dirPath.startsWith("?")) && dirPath !== "../") {
+					if (
+						!$(element).text().toLowerCase().includes("parent directory") &&
+						!dirPath.startsWith("?") &&
+						!blacklist.includes(dirPath)
+					) {
 						if (dirPath.endsWith("/")) {
 							const newUrl = url.resolve(dqUrl, dirPath);
-							if (!urlQueue.includes(newUrl)) {
+							if (!urlQueue.includes(newUrl) && !seen.includes(newUrl)) {
 								console.log(`[+] Adding ${newUrl}`);
 								urlQueue.push(newUrl);
 							}
 						} else {
-							const ext = dirPath.substr(dirPath.lastIndexOf(".") + 1);
-							if (typeof files[ext] === "undefined") files[ext] = { count: 1, size: 0 };
+							const ext = dirPath
+								.substr(dirPath.lastIndexOf(".") + 1)
+								.toLowerCase();
+							if (typeof files[ext] === "undefined")
+								files[ext] = { count: 1, size: 0 };
 							else files[ext].count += 1;
 						}
 					}
