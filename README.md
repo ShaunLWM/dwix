@@ -4,7 +4,7 @@
 [!["Latest Release"](https://img.shields.io/npm/v/dwix.svg)](https://github.com/ShaunLWM/dwix/releases/latest)
 [![MIT license](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/ShaunLWM/dwix/blob/master/LICENSE)
 
-A multithreaded open directory scraper
+A parallel open directory mapper.
 
 ## Requirement
 
