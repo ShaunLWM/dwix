@@ -4,7 +4,7 @@ const url = require("url");
 const async = require("async");
 const fs = require("fs");
 const argv = require("yargs")
-	.usage(`Usage: trix --verbose --output [dir] url`)
+	.usage(`Usage: dwix --verbose --output [dir] url`)
 	.alias("v", "verbose")
 	.alias("V", "verbose")
 	.describe("v", "Enable verbose logging")
