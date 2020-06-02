@@ -60,9 +60,11 @@ async.whilst(
 								urlQueue.push(newUrl);
 							}
 						} else {
-							const ext = dirPath
+							let ext = dirPath
 								.substr(dirPath.lastIndexOf(".") + 1)
 								.toLowerCase();
+							const split = dirPath.split(".");
+							if (split.length < 2) ext = "unknown";
 							if (typeof exts[ext] === "undefined") {
 								files.push(dirPath);
 								exts[ext] = { count: 1, size: 0 };
@@ -71,7 +73,7 @@ async.whilst(
 					}
 				});
 			},
-			(err, results) => {
+			(err) => {
 				return callback(null);
 			}
 		);
