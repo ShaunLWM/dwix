@@ -22,6 +22,10 @@ const argv = require("yargs")
 	.alias("o", "output")
 	.nargs("output", 1)
 	.describe("o", "Output scanned urls to file")
+	.alias("w", "whitelist")
+	.nargs("whitelist", 1)
+	.default("whitelist", "")
+	.describe("w", "List of whitelisted extensions")
 	.help("h")
 	.alias("h", "help")
 	.demandCommand(1).argv;
@@ -41,6 +45,7 @@ const print = (str) => {
 
 if (argv["verbose"]) console.time("Execution");
 if (typeof baseUrl === "undefined") throw new Error("Missing URL");
+const whitelistExts = argv.whitelist.split(",").map((w) => w.trim());
 
 async.whilst(
 	function test(cb) {
@@ -75,7 +80,8 @@ async.whilst(
 								.toLowerCase();
 							const split = dirPath.split(".");
 							if (split.length < 2) ext = "unknown";
-							files.push(url.resolve(dqUrl, dirPath));
+							if (whitelistExts.length < 1 || whitelistExts.includes(ext))
+								files.push(url.resolve(dqUrl, dirPath));
 							if (typeof exts[ext] === "undefined") exts[ext] = { count: 1 };
 							else exts[ext].count += 1;
 						}
