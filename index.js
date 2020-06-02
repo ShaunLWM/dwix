@@ -67,10 +67,9 @@ async.whilst(
 								.toLowerCase();
 							const split = dirPath.split(".");
 							if (split.length < 2) ext = "unknown";
-							if (typeof exts[ext] === "undefined") {
-								files.push(dirPath);
-								exts[ext] = { count: 1 };
-							} else exts[ext].count += 1;
+							files.push(url.resolve(dqUrl, dirPath));
+							if (typeof exts[ext] === "undefined") exts[ext] = { count: 1 };
+							else exts[ext].count += 1;
 						}
 					}
 				});
