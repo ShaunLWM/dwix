@@ -6,6 +6,8 @@
 
 A parallel open directory mapper.
 
+![output](/img/output.png)
+
 ## Requirement
 
 - NodeJS v8 and above

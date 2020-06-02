@@ -3,6 +3,7 @@ const cheerio = require("cheerio");
 const url = require("url");
 const async = require("async");
 const fs = require("fs");
+const cTable = require("console.table");
 const argv = require("yargs")
 	.usage(`Usage: dwix --verbose --output [dir] url`)
 	.alias("v", "verbose")
@@ -68,7 +69,7 @@ async.whilst(
 							if (split.length < 2) ext = "unknown";
 							if (typeof exts[ext] === "undefined") {
 								files.push(dirPath);
-								exts[ext] = { count: 1, size: 0 };
+								exts[ext] = { count: 1 };
 							} else exts[ext].count += 1;
 						}
 					}
@@ -81,7 +82,14 @@ async.whilst(
 	},
 	function (err, n) {
 		print(`-----------------------------`);
-		print(exts);
+		const arr = [];
+		for (const [key, value] of Object.entries(exts))
+			arr.push({
+				ext: key,
+				...value,
+			});
+
+		print(console.table(arr.sort((a, b) => b.count - a.count)));
 		if (argv["verbose"]) console.timeEnd("Execution");
 		if (argv["output"]) fs.writeFileSync(argv["output"], files.join("\n"));
 	}
