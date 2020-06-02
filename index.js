@@ -31,6 +31,7 @@ const print = (str) => {
 };
 
 if (argv["verbose"]) console.time("Execution");
+if (typeof baseUrl === "undefined") throw new Error("Missing URL");
 
 async.whilst(
 	function test(cb) {
