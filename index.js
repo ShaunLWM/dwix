@@ -1,18 +1,19 @@
 #!/usr/bin/env node
 
+require("console.table");
 const fetch = require("node-fetch");
 const cheerio = require("cheerio");
 const url = require("url");
 const async = require("async");
 const fs = require("fs");
-const cTable = require("console.table");
 const argv = require("yargs")
 	.usage(`Usage: dwix --verbose --output [dir] <url>`)
 	.example(`dwix http://127.0.0.1`)
 	.example(`dwix --verbose http://127.0.0.1`)
 	.example(`dwix --verbose --output urls.txt http://127.0.0.1`)
+	.example(`dwix --verbose --output urls.txt -i http://127.0.0.1`)
+	.example(`dwix --verbose --output urls.txt --whitelist mp3 http://127.0.0.1`)
 	.alias("v", "verbose")
-	.alias("V", "verbose")
 	.nargs("verbose", 0)
 	.describe("v", "Enable verbose logging")
 	.alias("p", "parallel")
@@ -25,28 +26,32 @@ const argv = require("yargs")
 	.alias("w", "whitelist")
 	.nargs("whitelist", 1)
 	.default("whitelist", "")
-	.describe("w", "List of whitelisted extensions")
+	.describe("w", "List of whitelisted extensions [affects output only]")
+	.alias("i", "ignore-unknown")
+	.nargs("i", 0)
+	.describe("i", "Ignore files with no extension [affects output only]")
 	.help("h")
 	.alias("h", "help")
 	.demandCommand(1).argv;
 
 const baseUrl = argv._[0];
-const blacklist = ["../", "./", "#!", "#!/"];
-const seen = [];
+if (typeof baseUrl === "undefined") throw new Error("Missing URL");
 
+const blacklist = ["../", "./", "#!", "#!/"];
+const urlQueue = [baseUrl];
+const seen = [];
 const exts = {};
 const files = [];
-
-const urlQueue = [baseUrl];
 
 const print = (str) => {
 	if (argv["verbose"]) console.log(str);
 };
 
-if (argv["verbose"]) console.time("Execution");
-if (typeof baseUrl === "undefined") throw new Error("Missing URL");
 const whitelistExts = argv.whitelist.split(",").map((w) => w.trim());
+let ignoreUnknown = true;
+if (typeof argv["ignoreUnknown"] === "undefined") ignoreUnknown = false;
 
+if (argv["verbose"]) console.time("Execution");
 async.whilst(
 	function test(cb) {
 		return cb(null, urlQueue.length > 0);
@@ -80,10 +85,12 @@ async.whilst(
 								.toLowerCase();
 							const split = dirPath.split(".");
 							if (split.length < 2) ext = "unknown";
-							if (whitelistExts.length < 1 || whitelistExts.includes(ext))
-								files.push(url.resolve(dqUrl, dirPath));
 							if (typeof exts[ext] === "undefined") exts[ext] = { count: 1 };
 							else exts[ext].count += 1;
+							if (ignoreUnknown && ext === "unknown") return;
+							if (whitelistExts.length > 0 && !whitelistExts.includes(ext))
+								return;
+							files.push(url.resolve(dqUrl, dirPath));
 						}
 					}
 				});
@@ -93,7 +100,7 @@ async.whilst(
 			}
 		);
 	},
-	function (err, n) {
+	function (err) {
 		print(`-----------------------------`);
 		const arr = [];
 		for (const [key, value] of Object.entries(exts))

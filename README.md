@@ -15,17 +15,23 @@ A parallel open directory mapper.
 ## Usage
 
 ```
-Usage: dwix --verbose --output [dir] url
+Usage: dwix --verbose --output [dir] <url>
 
 Options:
-  --version       Show version number                                  [boolean]
-  -v, --verbose   Enable verbose logging
-  -p, --parallel  Number of urls to scan at once
-  -o, --output    Output scanned urls to file
-  -h, --help      Show help                                            [boolean]
+  --version             Show version number                            [boolean]
+  -v, --verbose         Enable verbose logging
+  -p, --parallel        Number of urls to scan at once
+  -o, --output          Output scanned urls to file
+  -w, --whitelist       List of whitelisted extensions [affects output only]
+  -i, --ignore-unknown  Ignore files with no extension [affects output only]
+  -h, --help            Show help                                      [boolean]
 
-Example
-    $ dwix --verbose --output urls.txt http://127.0.0.1
+Examples:
+  dwix http://127.0.0.1
+  dwix --verbose http://127.0.0.1
+  dwix --verbose --output urls.txt http://127.0.0.1
+  dwix --verbose --output urls.txt -i http://127.0.0.1
+  dwix --verbose --output urls.txt --whitelist mp3 http://127.0.0.1
 ```
 
 ## Instructions
